@@ -10,7 +10,7 @@
 #define PS3_H
 
 typedef volatile struct{
-	// �R���g���[���̒l�i�[
+	// コントローラデータ
     char up;
     char down;
     char right;
@@ -32,9 +32,10 @@ typedef volatile struct{
 
 }Ps3;
 
-void ps3_init(void);                        // �������֐��D�ŏ��ɂ��̊֐������s���Ȃ���΂Ȃ�Ȃ�
-void ps3_uart_interrupt_routine(unsigned char uart_buff[], int data_size);	// UART���荞�݊֐����ł�������s�D
-void ps3_get_data(Ps3 *ps3_data);           // ���݂̃R���g���[���̒l���擾
-int ps3_time_out_check(void);               // �^�C���A�E�g�`�F�b�N(100ms�Ԋu���炢�Ŏ��s)
+void ps3_init(void);                        // 初期化関数（最初にこの関数を実行しなければならない）
+void ps3_uart_interrupt_routine(unsigned char uart_buff[], int data_size);	// UART読み込み関数を実行
+void ps3_get_data(Ps3 *ps3_data);           // 現在のコントローラデータを取得
+int ps3_time_out_check(void);               // タイムアウトチェック(100ms間隔ぐらいで実行)
 
 #endif /* PS3_H */
+
