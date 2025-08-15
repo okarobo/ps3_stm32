@@ -52,29 +52,28 @@ void ps3_uart_interrupt_routine(unsigned char uart_buff[], int data_size)
 	int i = 0;
 	int check_sum = 0;
 
-	// uart�o�b�t�@�Ƀf�[�^������ԃ��[�v
 	for(i = 0; i < data_size; i++) {
-		// �X�^�[�g�e�L�X�g(ST)���o
+		// スタートテキスト(ST)の確認
 		if(uart_buff[i] == 0x80){
 			ps3_buff_cnt = 0;
 		}
 
-		// uart�o�b�t�@����Cps3�o�b�t�@�փf�[�^���ړ�
+		// UARTバッファとps3データバッファ間でデータを移動
 		ps3_buff[ps3_buff_cnt] = uart_buff[i];
 
-		// 1�t���[����M�������Ƃ��m�F
+		// ST以外のバッファ数を確認
 		if(ps3_buff_cnt == 7) {
-			// �`�F�b�N�T���̌v�Z
+			// チェックサムを計算
 			check_sum = 0;
 			for(i = 1; i < 7; i++) {
 				check_sum = (check_sum + ps3_buff[i]) & 0X7F;
 			}
 
-			if(ps3_buff[7] == check_sum) {		// �`�F�b�N�T���������Ă���΁C�f�[�^�X�V
-				// �R���g���[���̒l�N���A
+			if(ps3_buff[7] == check_sum) {		// チェックサムが一致していればデータを解析
+				// コントローラのデータをクリア
 				ps3_clear();
 
-				// ��{�^���C���{�^���C�X�^�[�g�{�^���̍X�V
+				// A, B, Start ボタンの更新
 				if(((ps3_buff[2] >> 1) & 1) && (ps3_buff[2] & 1)) {
 					internal_ps3_data.start = 1;
 				}
@@ -85,7 +84,7 @@ void ps3_uart_interrupt_routine(unsigned char uart_buff[], int data_size)
 					internal_ps3_data.down = 1;
 				}
 
-				// �E�{�^���C���{�^���C�Z���N�g�{�^���̍X�V
+				// 上, 下, Select ボタンの更新
 				if(((ps3_buff[2] >> 2) & 1) && ((ps3_buff[2] >> 3) & 1)){
 					internal_ps3_data.select = 1;
 				}else if((ps3_buff[2] >> 2) & 1){
@@ -94,7 +93,7 @@ void ps3_uart_interrupt_routine(unsigned char uart_buff[], int data_size)
 					internal_ps3_data.left = 1;
 				}
 
-				// �T���J�N�C�V�J�N�C�}���C�o�c�̍X�V
+				// 三角, バツ, 丸, 四角 ボタンの更新 
 				if((ps3_buff[2] >> 4) & 1){
 					internal_ps3_data.sankaku = 1;
 				}
@@ -108,35 +107,35 @@ void ps3_uart_interrupt_routine(unsigned char uart_buff[], int data_size)
 					internal_ps3_data.shikaku = 1;
 				}
 
-				// L1, L2, R1, R2�̍X�V
-				if((ps3_buff[1] >> 1)& 1){
+				// L1, L2, R1, R2 ボタンの更新
+				if((ps3_buff[1] >> 1) & 1){
 					internal_ps3_data.L1 = 1;
 				}
-				if((ps3_buff[1] >> 2)& 1){
+				if((ps3_buff[1] >> 2) & 1){
 					internal_ps3_data.L2 = 1;
 				}
-				if((ps3_buff[1] >> 3)& 1){
+				if((ps3_buff[1] >> 3) & 1){
 					internal_ps3_data.R1 = 1;
 				}
-				if((ps3_buff[1] >> 4)& 1){
+				if((ps3_buff[1] >> 4) & 1){
 					internal_ps3_data.R2 = 1;
 				}
 
-				// �X�e�B�b�N�̍X�V
+				// スティックデータの更新
 				internal_ps3_data.left_analog_updown = ps3_buff[4];
 				internal_ps3_data.left_analog_rightleft = ps3_buff[3];
 				internal_ps3_data.right_analog_updown = ps3_buff[6];
 				internal_ps3_data.right_analog_rightleft = ps3_buff[5];
 
-                // �^�C���A�E�g�`�F�b�N�t���O�N���A
+                // タイムアウトチェックフラグのクリア
                 time_out_check_flg = 0;
 			}
 		}
-		else {		// �`�F�b�N�T�����Ԉ���Ă����ꍇ�C�������Ȃ��D���̃t���[���͔j�������D
+		else {		// チェックサムが間違っている場合は何もしない(このフレームは破棄する)
 			;
 		}
 
-		// ps3�o�b�t�@�̃J�E���g���C���N�������g(8�ȏ�ɂȂ�Ȃ��悤�ɂ���)
+		// ps3バッファのカウントをインクリメント(8以上にならないようにする)
 		if(ps3_buff_cnt < 8) {
 			ps3_buff_cnt++;
 		}
@@ -153,7 +152,7 @@ void ps3_get_data(Ps3 *ps3_data)
 int ps3_time_out_check(void) {
     int res = 0;
 
-    if(time_out_check_flg == 1) {   // �^�C���A�E�g����
+    if(time_out_check_flg == 1) {   // タイムアウト
         ps3_clear();
         res = 1;
     }
@@ -162,3 +161,4 @@ int ps3_time_out_check(void) {
 
     return res;
 }
+
